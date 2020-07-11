@@ -7,17 +7,17 @@ screen_height = 900
 screen = display.set_mode((screen_width,screen_height))
 N = 200 # Number of rays
 Nw = 10 # Number of walls
-length = 1000 # Length of rays
+length = 2000 # Length of rays
 move_speed = 8
 look_speed = 10
-fov = 0.3*pi # In radians
+fov = 0.35*pi # In radians
 x,y = 0,0 # Starting position
 raycaster_view = False # Default view, raycaster or first-person
 
 key.set_repeat(1)
 # Create random wall locations
 seg = [[(random.randint(0,screen_width),random.randint(0,screen_height)),(random.randint(0,screen_width),random.randint(0,screen_height))] for _ in range(Nw)]
-draw_width = screen_width/N
+draw_width = screen_width//N
 view_angle_offset = 0
 drawing = True
 
@@ -69,11 +69,11 @@ while drawing:
             
     if raycaster_view:
         for line in seg:
-            draw.line(screen, (255,0,0), line[0], line[1])
+            draw.line(screen, (100,100,100), line[0], line[1])
 
-    for l in range(N):
-        dx = cos(fov*(l+view_angle_offset)/N)
-        dy = sin(fov*(l+view_angle_offset)/N)
+    for ray in range(N):
+        dx = cos(fov*(ray+view_angle_offset)/N)
+        dy = sin(fov*(ray+view_angle_offset)/N)
         x_0 = x+dx*length
         y_0 = y+dy*length
         rec_t = []
@@ -95,7 +95,7 @@ while drawing:
         height = 0
         colour = (0,0,0)
         if rec_t:
-            angle = (fov*(view_angle_offset+(N/2))/N) - (fov*(l+view_angle_offset)/N)
+            angle = (fov*(view_angle_offset+(N/2))/N) - (fov*(ray+view_angle_offset)/N)
             distance = min(rec_t)*abs(cos(angle)) # Obtaining true distance i.e. The shadow from the vector going to the wall, to the vector from where we view. This removes the fisheye effect
             height = (1/max(distance,0.1))*screen_height//10
             brightness = 1-sqrt(min(rec_t)) # Make brightness decay with the square of the distance
@@ -104,7 +104,7 @@ while drawing:
         if raycaster_view:
             draw.line(screen, (255,255,255), (x,y), (x_0,y_0))
         else:
-            draw.rect(screen, colour, (draw_width*l,screen_height//2-height//2,screen_width//N,height))
+            draw.rect(screen, colour, (draw_width*ray,screen_height//2-height//2,screen_width//N,height))
     
     display.update() 
 quit()
