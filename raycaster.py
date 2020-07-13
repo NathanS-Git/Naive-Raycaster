@@ -2,6 +2,7 @@ from pygame import *
 from math import *
 import random
 init()
+
 screen_width = 1600
 screen_height = 900
 screen = display.set_mode((screen_width,screen_height))
@@ -9,7 +10,7 @@ N = 200 # Number of rays
 Nw = 10 # Number of walls
 length = 2000 # Length of rays
 move_speed = 8
-look_speed = 10
+look_speed = 7
 fov = 0.35*pi # In radians
 x,y = 0,0 # Starting position
 raycaster_view = False # Default view, raycaster or first-person
@@ -42,31 +43,30 @@ def dot_vec(p,q):
 # Main display loop
 while drawing:
     screen.fill((0,0,0))
-    for e in event.get():
-        #x,y = mouse.get_pos()
-
-        if e.type == KEYDOWN:
-            if e.key == K_w: # Move forward
-                x += move_speed*cos((fov*(view_angle_offset+(N/2))/N))
-                y += move_speed*sin((fov*(view_angle_offset+(N/2))/N))
-            elif e.key == K_s: # Move backward
-                x += move_speed*cos((fov*(view_angle_offset+(N/2))/N)+pi)
-                y += move_speed*sin((fov*(view_angle_offset+(N/2))/N)+pi)
-            if e.key == K_e: # Strafe right
-                x += move_speed*cos((fov*(view_angle_offset+(N/2))/N)+pi/2)
-                y += move_speed*sin((fov*(view_angle_offset+(N/2))/N)+pi/2)
-            elif e.key == K_q: # Strafe left
-                x += move_speed*cos((fov*(view_angle_offset+(N/2))/N)+3*pi/2)
-                y += move_speed*sin((fov*(view_angle_offset+(N/2))/N)+3*pi/2)
-            if e.key == K_a: # Look left
-                view_angle_offset -= look_speed
-            elif e.key == K_d: # Look right
-                view_angle_offset += look_speed
-            if e.key == K_v: # Change view
-                raycaster_view = False if raycaster_view else True
-            if e.key == K_ESCAPE: # Exit
-                drawing = False
-            
+    keys = key.get_pressed()
+    event.get()
+    
+    if keys[K_w]: # Move forwards
+        x += move_speed*cos((fov*(view_angle_offset+(N/2))/N))
+        y += move_speed*sin((fov*(view_angle_offset+(N/2))/N))
+    elif keys[K_s]: # Move backward
+        x += move_speed*cos((fov*(view_angle_offset+(N/2))/N)+pi)
+        y += move_speed*sin((fov*(view_angle_offset+(N/2))/N)+pi)
+    if keys[K_e]: # Strafe right
+        x += move_speed*cos((fov*(view_angle_offset+(N/2))/N)+pi/2)
+        y += move_speed*sin((fov*(view_angle_offset+(N/2))/N)+pi/2)
+    elif keys[K_q]: # Strafe left
+        x += move_speed*cos((fov*(view_angle_offset+(N/2))/N)+3*pi/2)
+        y += move_speed*sin((fov*(view_angle_offset+(N/2))/N)+3*pi/2)
+    if keys[K_a]: # Look left
+        view_angle_offset -= look_speed
+    elif keys[K_d]: # Look right
+        view_angle_offset += look_speed
+    if keys[K_v]: # Change view
+        raycaster_view = False if raycaster_view else True
+    if keys[K_ESCAPE]: # Exit
+        drawing = False
+      
     if raycaster_view:
         for line in seg:
             draw.line(screen, (100,100,100), line[0], line[1])
