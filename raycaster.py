@@ -1,6 +1,7 @@
 from pygame import *
 from math import *
 import random
+
 init()
 
 screen_width = 1600
@@ -10,19 +11,22 @@ N = 200 # Number of rays
 Nw = 10 # Number of walls
 length = 2000 # Length of rays
 move_speed = 8
-look_speed = 7
-fov = 0.35*pi # In radians
+look_speed = 7 # Rotation speed
+fov = 0.5*pi # In radians
 x,y = 0,0 # Starting position
 raycaster_view = False # Default view, raycaster or first-person
+tick = 0
 
 key.set_repeat(1)
 # Create random wall locations
 seg = [[(random.randint(0,screen_width),random.randint(0,screen_height)),(random.randint(0,screen_width),random.randint(0,screen_height))] for _ in range(Nw)]
+
 draw_width = screen_width//N
 view_angle_offset = 0
 drawing = True
+clock = time.Clock()
 
-def add__vec(p,q):
+def add_vec(p,q):
     return tuple(map(sum, zip(p,q)))
 
 def sub_vec(p,q):
@@ -34,7 +38,7 @@ def dev_vec(p,q):
 def mul_vec(p,q):
     return tuple(map(lambda xy: xy[0]*xy[1],zip(p,q)))
 
-def cross_vec(p,q):
+def cross_vec(p,q): # Defined 2D cross vector calculation
     return p[0]*q[1]-p[1]*q[0]
 
 def dot_vec(p,q):
@@ -42,9 +46,12 @@ def dot_vec(p,q):
 
 # Main display loop
 while drawing:
+    clock.tick(30)
     screen.fill((0,0,0))
     keys = key.get_pressed()
     event.get()
+    if tick < 100:
+        tick += 1
     
     if keys[K_w]: # Move forwards
         x += move_speed*cos((fov*(view_angle_offset+(N/2))/N))
@@ -62,7 +69,8 @@ while drawing:
         view_angle_offset -= look_speed
     elif keys[K_d]: # Look right
         view_angle_offset += look_speed
-    if keys[K_v]: # Change view
+    if keys[K_v] and tick > 15: # Change view
+        tick = 0 # Reset cooldown
         raycaster_view = False if raycaster_view else True
     if keys[K_ESCAPE]: # Exit
         drawing = False
@@ -70,13 +78,15 @@ while drawing:
     if raycaster_view:
         for line in seg:
             draw.line(screen, (100,100,100), line[0], line[1])
+    else:
+        draw.rect(screen, (90,90,90), (0,screen_height//2,screen_width,screen_height))
 
     for ray in range(N):
         dx = cos(fov*(ray+view_angle_offset)/N)
         dy = sin(fov*(ray+view_angle_offset)/N)
         x_0 = x+dx*length
         y_0 = y+dy*length
-        rec_t = []
+        rec_t = [] # Record t values from algorithm below
         for wall in seg:
             # Two vectors p+tr, and q+us
             # Implemented algorithm given from https://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect
